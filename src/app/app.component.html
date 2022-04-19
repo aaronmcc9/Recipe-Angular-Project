@@ -1,0 +1,12 @@
+<app-header
+ (viewChanged)="setCurrentComponent($event)"></app-header>
+<div class="container">
+  <div class="row">
+    <div class="col-md-12">
+      <app-recipes *ngIf="currentView === 'Recipes'; else elseblock"></app-recipes>
+      <ng-template  #elseblock>
+        <app-shopping-list></app-shopping-list>
+      </ng-template>
+    </div>
+  </div>
+</div>
