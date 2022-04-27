@@ -8,9 +8,9 @@ import { Component } from '@angular/core';
 export class AppComponent {
   currentView = 'Recipes'
 
-  setCurrentComponent(newView: string)
-  {
-    this.currentView = newView;
-    console.log("hey", this.currentView);
-  }
+  // setCurrentComponent(newView: string)
+  // {
+  //   this.currentView = newView;
+  //   console.log("hey", this.currentView);
+  // }
 }
