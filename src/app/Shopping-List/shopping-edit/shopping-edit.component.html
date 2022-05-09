@@ -1,22 +1,33 @@
 <div class="row">
   <div class="col-xs-12">
-    <form>
+    <form [formGroup]="createRecipeForm" (ngSubmit)="onSubmitIngredient()">
       <div class="row">
         <div class="col-sm-5 form-group">
           <label for="name">Name</label>
-          <input type="text" id="name" class="form-control" #nameInput />
+          <input type="text" id="name" 
+          class="form-control" 
+          formControlName="name" />
+          <p *ngIf="!createRecipeForm.get('name').valid && createRecipeForm.get('name').touched">
+            <span *ngIf="createRecipeForm.get('name').errors['required']" class="help-block">This field is required</span>
+          </p>
         </div>
 
         <div class="col-sm-2 form-group">
           <label for="amount">Amount</label>
-          <input type="number" id="amount" class="form-control" #amountInput />
+          <input type="number" 
+          id="amount"
+          class="form-control"
+          formControlName="amount" />
+          <p *ngIf="!createRecipeForm.get('amount').valid && createRecipeForm.get('amount').touched">
+            <span *ngIf="createRecipeForm.get('amount').errors['required']" class="help-block">This field is required</span>
+          </p>
         </div>
       </div>
       <div class="row">
         <div class="col-xs-12">
-          <button class="btn btn-success" type="button" (click)="onCreateIngredient($event)" >Add</button>
-          <button class="btn btn-danger" type="button">Delete</button>
-          <button class="btn btn-primary" type="button">Clear</button>
+          <button class="btn btn-success" type="submit" [disabled]="!createRecipeForm.valid">{{editMode ? 'Update' : 'Add'}}</button>
+          <button class="btn btn-danger"  type="button" [disabled]="!editMode" (click)="onDelete()">Delete</button>
+          <button class="btn btn-primary" type="button" (click)="onClear()">Clear</button>
         </div>
       </div>
     </form>
