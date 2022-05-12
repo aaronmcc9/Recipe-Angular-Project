@@ -2,6 +2,7 @@ button{
     margin: 4px;;
 }
 
+textarea.ng-invalid.ng-touched,
 input.ng-invalid.ng-touched{
     border: 1px solid red;
 }
