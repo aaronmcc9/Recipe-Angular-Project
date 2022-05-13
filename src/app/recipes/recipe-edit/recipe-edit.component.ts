@@ -2,8 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Params, Router } from '@angular/router';
 import { Recipe } from '../recipe.model';
-import { RecipeService } from '../recipe.service';
 import * as _ from "lodash";
+import { RecipeService } from '../recipe.service';
 
 @Component({
   selector: 'app-recipe-edit',
@@ -19,7 +19,7 @@ export class RecipeEditComponent implements OnInit {
   changesMade = false;
 
   constructor(private route: ActivatedRoute,
-     private recipeService: RecipeService, private router: Router) { }
+    private recipeService: RecipeService, private router: Router) { }
 
   ngOnInit(): void {
     this.route.params
@@ -69,11 +69,17 @@ export class RecipeEditComponent implements OnInit {
 
     this.editRecipeForm.valueChanges.subscribe(
       (recipe: Recipe) => {
-        this.editedRecipe = recipe;
-        this.changesMade = (this.editedRecipe.name !== this.selectedRecipe.name
-          || this.editedRecipe.description !== this.selectedRecipe.description
-          || this.editedRecipe.imagePath !== this.selectedRecipe.imagePath
-          || JSON.stringify(this.editedRecipe.ingredients) !== JSON.stringify(this.selectedRecipe.ingredients));
+
+        if (this.editMode) {
+          this.editedRecipe = recipe;
+          this.changesMade = (this.editedRecipe.name !== this.selectedRecipe.name
+            || this.editedRecipe.description !== this.selectedRecipe.description
+            || this.editedRecipe.imagePath !== this.selectedRecipe.imagePath
+            || JSON.stringify(this.editedRecipe.ingredients) !== JSON.stringify(this.selectedRecipe.ingredients));
+        }
+        else{
+          this.changesMade = true;
+        }
       }
     );
   }
@@ -86,7 +92,7 @@ export class RecipeEditComponent implements OnInit {
       this.recipeService.addRecipe(this.editRecipeForm.value)
     }
 
-    this.router.navigate(['../'], {relativeTo: this.route})
+    this.router.navigate(['../'], { relativeTo: this.route })
   }
 
   onCancel() {
