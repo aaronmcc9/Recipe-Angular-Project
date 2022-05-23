@@ -3,16 +3,18 @@ import { RouterModule, Routes } from '@angular/router';
 import { RecipeDetailComponent } from './recipes/recipe-detail/recipe-detail.component';
 import { RecipeEditComponent } from './recipes/recipe-edit/recipe-edit.component';
 import { RecipeStartComponent } from './recipes/recipe-start/recipe-start.component';
+import { RecipeResolverService } from './recipes/recipes-resolver.service';
 import { RecipesComponent } from './recipes/recipes.component';
 import { ShoppingListComponent } from './Shopping-List/shopping-list.component';
 
 const routes: Routes = [
   { path: '', redirectTo: '/recipes', pathMatch: 'full' },
   {
-    path: 'recipes', component: RecipesComponent, children: [
-      { path: '', component: RecipeStartComponent },
+    path: 'recipes', component: RecipesComponent, resolve: [RecipeResolverService], children: [
+      { path: '', component: RecipeStartComponent},
       { path: 'new', component: RecipeEditComponent }, //put before id or else will fail (expects id if other way around)
-      { path: ':id', component: RecipeDetailComponent },
+      { path: ':id', 
+      component: RecipeDetailComponent },
       { path: ':id/edit', component: RecipeEditComponent }
     ]
   },

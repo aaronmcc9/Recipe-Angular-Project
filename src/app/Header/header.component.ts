@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { DataStorageService } from '../Shared/data-storage.service';
 
 @Component({
   selector: 'app-header',
@@ -9,10 +10,13 @@ export class HeaderComponent {
   collapsed = true;
   isRecipes: string;
 
-//  @Output() viewChanged = new EventEmitter<string>();
+  constructor(private dataStorageService: DataStorageService){}
 
-  // onViewChange(selectedView: HTMLAnchorElement) {
-  //   this.isRecipes = selectedView.text;
-  //   this.viewChanged.emit(this.isRecipes);
-  // }
+  saveData(){
+    this.dataStorageService.storeData();
+  }
+
+  fetchData(){
+    this.dataStorageService.fetchData().subscribe();
+  }
 }
