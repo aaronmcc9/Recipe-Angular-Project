@@ -1,0 +1,12 @@
+.btn-container {
+    display: flex;
+    justify-content: flex-end;
+}
+
+button {
+    margin-left: .2em;
+}
+
+input.ng-invalid.ng-touched{
+    border: 1px solid red;
+}
