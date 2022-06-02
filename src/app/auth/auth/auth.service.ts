@@ -1,14 +1,16 @@
 import { Injectable } from "@angular/core";
-import { HttpClient } from "@angular/common/http";
-import { catchError, throwError } from "rxjs";
+import { HttpClient, HttpErrorResponse } from "@angular/common/http";
+import { catchError, Subject, tap, throwError } from "rxjs";
+import { User } from "./user.model";
 
-interface AuthResponseData{
-    kind:string;
-    idToken:string;
-    email:string;
-    refreshToken:string;
-    expiresIn:string;
-    localId:string;
+export interface AuthResponseData {
+    kind: string;
+    idToken: string;
+    email: string;
+    refreshToken: string;
+    expiresIn: string;
+    localId: string;
+    registered?: boolean;
 }
 
 @Injectable({
@@ -16,6 +18,7 @@ interface AuthResponseData{
 })
 export class AuthService {
 
+    user = new Subject<User>();
     constructor(private http: HttpClient) { }
 
     signUp(email: string, password: string) {
@@ -25,18 +28,54 @@ export class AuthService {
                 password: password,
                 returnSecureToken: true
             })
-            .pipe(catchError(errorRes =>{
-                let errorMessage = 'An unknown error occured. Please delete the repo.';
-                
-                if(!errorRes.error || !errorRes.error.error)
-                    return throwError(errorMessage)
-                switch(errorRes.error.error.message){
-                    case 'EMAIL_EXISTS':
-                        errorMessage = "This email already exists";
-                        break;
-                }
+            .pipe(catchError(this.handleError),
+                tap(resData => {
+                    this.handleAuthentication(
+                        resData.email,
+                        resData.localId,
+                        resData.idToken,
+                        +resData.expiresIn
+                    );
+                }));
+    }
 
-                return throwError(errorMessage);
-            }));
+    login(email: string, password: string) {
+        return this.http.post<AuthResponseData>('https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyCqy5ecCF7lWnuuCkG3Le9ZzRBtJWN4hyg',
+            {
+                email: email,
+                password: password,
+                returnSecureToken: true
+            })
+            .pipe(catchError(this.handleError));
+    }
+
+    private handleError(errorRes: HttpErrorResponse) {
+        let errorMessage = 'An unknown error occured. Please delete the repo.';
+        if (!errorRes.error || !errorRes.error.error)
+            return throwError(errorMessage)
+        switch (errorRes.error.error.message) {
+            case 'EMAIL_EXISTS':
+                errorMessage = "This email already exists";
+                break;
+            case 'EMAIL_NOT_FOUND':
+                errorMessage = "This email was not found";
+                break;
+            case 'INVALID_PASSWORD':
+                errorMessage = "This password is invalid";
+                break;
+        }
+
+        return throwError(errorMessage);
+    }
+
+    private handleAuthentication(email: string, userId: string, token: string, expiresIn: number) {
+        const expirationDate = new Date(new Date().getTime() + +expiresIn * 1000) //coverts to milliseconds
+
+        const user = new User(email,
+            userId,
+            token,
+            expirationDate);
+
+        this.user.next(user);
     }
 }
