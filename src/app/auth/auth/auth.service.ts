@@ -1,7 +1,8 @@
 import { Injectable } from "@angular/core";
 import { HttpClient, HttpErrorResponse } from "@angular/common/http";
-import { catchError, Subject, tap, throwError } from "rxjs";
+import { BehaviorSubject, catchError, Subject, tap, throwError } from "rxjs";
 import { User } from "./user.model";
+import { Router } from "@angular/router";
 
 export interface AuthResponseData {
     kind: string;
@@ -18,8 +19,8 @@ export interface AuthResponseData {
 })
 export class AuthService {
 
-    user = new Subject<User>();
-    constructor(private http: HttpClient) { }
+    user = new BehaviorSubject<User>(null);
+    constructor(private http: HttpClient, private router: Router) { }
 
     signUp(email: string, password: string) {
         return this.http.post<AuthResponseData>('https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=AIzaSyCqy5ecCF7lWnuuCkG3Le9ZzRBtJWN4hyg',
@@ -46,7 +47,46 @@ export class AuthService {
                 password: password,
                 returnSecureToken: true
             })
-            .pipe(catchError(this.handleError));
+            .pipe(catchError(this.handleError),
+                tap(resData => {
+                    this.handleAuthentication(
+                        resData.email,
+                        resData.localId,
+                        resData.idToken,
+                        +resData.expiresIn
+                    );
+                }));
+    }
+
+    logout() {
+
+        this.user.next(null);
+        this.router.navigate(['/auth']);
+    }
+
+    autoLogin() {
+        const userData:{
+            email: string,
+            id: string,
+            _token: string,
+            _tokenExpirationDate: string,
+        } = JSON.parse(localStorage.getItem('userData'));
+
+        if (!userData) {
+            return;
+        }
+
+        const storedUser = new User(
+            userData.email,
+            userData.id,
+            userData._token,
+            new Date(userData._tokenExpirationDate));
+
+        //only notify / set if user is valid
+        if(storedUser.token){
+            this.user.next(storedUser);
+        }
+
     }
 
     private handleError(errorRes: HttpErrorResponse) {
@@ -77,5 +117,8 @@ export class AuthService {
             expirationDate);
 
         this.user.next(user);
+
+        //stores logged in user
+        localStorage.setItem('userData', JSON.stringify(user));
     }
 }

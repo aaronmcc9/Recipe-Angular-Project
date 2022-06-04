@@ -10,10 +10,12 @@
         <ul class="nav navbar-nav">
             <li *ngIf="isAuthenticated" routerLinkActive="active"><a [routerLink]="['/recipes']">Recipes</a></li>
             <li routerLinkActive="active"><a [routerLink]="['/shopping-list']">Shopping List</a></li>
-            <li *ngIf="isAuthenticated" routerLinkActive="active"><a [routerLink]="['/auth']">Login</a></li>
+            <li *ngIf="!isAuthenticated" routerLinkActive="active"><a [routerLink]="['/auth']">Login</a></li>
         </ul>
         <ul class="nav navbar-nav navbar-right">
-          <li *ngIf="!isAuthenticated"  style="cursor: pointer">
+          <li *ngIf="isAuthenticated" 
+           style="cursor: pointer"
+           (click)="onLogout()">
              <a >Logout</a>
           </li>
             <li class="dropdown" appDropdown>
