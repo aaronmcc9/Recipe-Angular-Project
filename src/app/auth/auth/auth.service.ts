@@ -20,6 +20,8 @@ export interface AuthResponseData {
 export class AuthService {
 
     user = new BehaviorSubject<User>(null);
+    private tokenExpirationTimer: any;
+
     constructor(private http: HttpClient, private router: Router) { }
 
     signUp(email: string, password: string) {
@@ -59,13 +61,17 @@ export class AuthService {
     }
 
     logout() {
-
         this.user.next(null);
         this.router.navigate(['/auth']);
+
+        localStorage.removeItem('userData');
+
+        //removes timer event when user logsout
+        this.tokenExpirationTimer = null;
     }
 
     autoLogin() {
-        const userData:{
+        const userData: {
             email: string,
             id: string,
             _token: string,
@@ -83,10 +89,23 @@ export class AuthService {
             new Date(userData._tokenExpirationDate));
 
         //only notify / set if user is valid
-        if(storedUser.token){
+        if (storedUser.token) {
             this.user.next(storedUser);
+
+            //here we must manually work out the expiration time as the expired in token was not issued via a request reponse
+            const expirtationDuration = new Date(userData._tokenExpirationDate).getTime() -
+                new Date().getTime();
+
+            this.autoLogout(expirtationDuration);
         }
 
+    }
+
+    autoLogout(expirtationDuration: number) {
+
+        this.tokenExpirationTimer = setTimeout(() => {
+            this.logout();
+        }, expirtationDuration)
     }
 
     private handleError(errorRes: HttpErrorResponse) {
@@ -117,6 +136,7 @@ export class AuthService {
             expirationDate);
 
         this.user.next(user);
+        this.autoLogout(expiresIn * 1000);
 
         //stores logged in user
         localStorage.setItem('userData', JSON.stringify(user));
